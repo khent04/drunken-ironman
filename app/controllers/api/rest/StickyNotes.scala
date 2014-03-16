@@ -1,43 +1,108 @@
+
 package controllers.api.rest
 
-import play.api.mvc.{Action, Controller}
-import play.api.libs.json.{JsNumber, Json}
-import models.StickyNote
+import play.api.mvc._
+import play.api.libs.json._
+import models.{StickyNote}
+import scala.util.{Failure, Try, Success}
+import scala.Some
+import scala.util.Success
+import scala.util.Failure
+import play.api.libs.json.JsObject
+import play.api.libs.json.JsString
+import scala.math.BigDecimal
+import scala.util.Success
+import scala.util.Failure
+import play.api.libs.json.JsObject
+import play.api.libs.json.JsString
+import play.api.mvc.SimpleResult
+import play.api.libs.json.JsNumber
+import play.api.Logger
 
 object StickyNotes extends Controller {
 
-  def findAll = Action {
-    Ok(Json.toJson(StickyNote.findAll()))
+  implicit def extractRequestUUID(implicit request: Request[_]): Option[String] = {
+    request.headers.get("requestUUID")
   }
 
-  def create = Action {
-    StickyNote.create() match {
-      case Some(id) => Ok(Json.toJson(Json.obj(
-        "id" -> JsNumber(id)
-      )))
-      case _ => InternalServerError("")
-    }
+  implicit def stringToException(string: String): Exception = {
+    new Exception(string)
   }
 
-  def update() = Action(parse.json) {
-    request =>
-      request.body.validate[StickyNote].map {
-        stickyNote => {
-          StickyNote.save(stickyNote)
-          Ok("")
+  implicit def tryOfStickyNoteToTryOfJsValue(tryOfStickyNote: Try[StickyNote]): Try[JsValue] = {
+    tryOfStickyNote.map(Json.toJson(_))
+  }
+
+  implicit def okJsValue(t: Try[_]): Try[JsValue] = {
+    t.map(_ => JsString("ok!"))
+  }
+
+  implicit def jsValueToOk(v: JsValue): SimpleResult = Ok(v)
+
+  //TODO find a way to create a generic handler
+  def HandelJsonRequest(f: Request[JsValue] => Try[JsValue])(implicit g: JsValue => SimpleResult): Action[JsValue] = {
+    Action(parse.json) {
+      request =>
+        f(request) match {
+          case Success(result) => g(result)
+          case Failure(error) => InternalServerError(JsObject(Seq(
+            "error" -> JsString(error.toString)
+          )))
         }
-      }.recoverTotal {
-        e => BadRequest(e.toString)
-      }
-  }
-
-  def deleteById(id: Long) = Action {
-    StickyNote.deleteById(id) match {
-      case 1 => Ok(Json.toJson("ok"))
-      case _ => NotFound("")
     }
   }
 
+  def HandelRequest(f: Request[AnyContent] => Try[JsValue])(implicit g: JsValue => SimpleResult): Action[AnyContent] = {
+    Action {
+      request =>
+        f(request) match {
+          case Success(result) => g(result)
+          case Failure(error) => InternalServerError(JsObject(Seq(
+            "error" -> JsString(error.toString)
+          )))
+        }
+    }
+  }
+
+
+  def extractStickyNote(implicit request: Request[JsValue]): JsResult[StickyNote] = {
+    request.body.validate[StickyNote]
+  }
+
+  def findAll = Action {
+    request => Ok(Json.toJson(StickyNote.findAll()))
+  }
+
+  def create = HandelRequest {
+    implicit request => StickyNote.create
+  }
+
+  def update = HandelJsonRequest {
+    implicit request => {
+      extractStickyNote
+        .map(StickyNote.save)
+        .getOrElse(Failure("Oops..."))
+    }
+  }
+
+  def deleteById(id: Long) = HandelRequest(
+    implicit request => {
+      StickyNote.deleteById(id).map(JsBoolean(_))
+    }
+  )(result => result match {
+    case JsBoolean(true) => Ok("...")
+    case v => NotFound
+  })
+
+
+  def liveUpdate = WebSocket.async[JsValue] {
+
+    request => {
+      StickyNote.connectToLiveUpdate()
+    }
+
+  }
 
 
 }
+

@@ -40,7 +40,7 @@ object StickyNote {
 
     def writes(stickyNote: StickyNote): JsValue = JsObject(Seq(
       "id" -> extractId(stickyNote),
-      "name" -> JsString(stickyNote.text)
+      "text" -> JsString(stickyNote.text)
     ))
 
 

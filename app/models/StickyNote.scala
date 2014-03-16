@@ -106,9 +106,6 @@ object StickyNote {
   def save(stickyNote: StickyNote)(implicit requestUUID: Option[String]): Try[StickyNote] = {
     DB.withConnection {
       implicit connection =>
-
-        Logger.logger.debug(requestUUID.toString);
-
         Try {
           val now = new DateTime();
           SQL( """
@@ -145,18 +142,14 @@ object StickyNote {
               DELETE FROM sticky_notes
               WHERE id = {id}
                        """).on('id -> id).executeUpdate()
-
-
-
-          liveUpdate ! Update(Json.obj(
-            "requestUUID" -> JsString(requestUUID.getOrElse(null)),
-            "type" -> "delete",
-            "stickyNoteId" -> JsNumber(id)
-          ))
-
-          Logger.logger.debug(s"?????? $i")
-
-          i == 1
+          if (i == 1) {
+            liveUpdate ! Update(Json.obj(
+              "requestUUID" -> JsString(requestUUID.getOrElse(null)),
+              "type" -> "delete",
+              "stickyNoteId" -> JsNumber(id)
+            ))
+            true
+          } else false
         }
     }
   }

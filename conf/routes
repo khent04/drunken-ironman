@@ -7,6 +7,9 @@ GET     /                           controllers.Application.index
 
 #StickyNotes REST API
 GET     /api/sticky-notes           controllers.api.rest.StickyNotes.findAll
+PUT     /api/sticky-notes           controllers.api.rest.StickyNotes.create
+POST    /api/sticky-notes           controllers.api.rest.StickyNotes.update
+DELETE  /api/sticky-notes/:id       controllers.api.rest.StickyNotes.deleteById(id:Long)
 
 
 # Map static resources from the /public folder to the /assets URL path

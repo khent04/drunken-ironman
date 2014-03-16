@@ -11,18 +11,17 @@ import play.api.libs.json.JsObject
 import play.api.libs.json.JsString
 import play.api.libs.json.JsNumber
 import play.api.Play.current
+import org.joda.time._
+import utils.AnormExtensions._
+import org.joda.time.format.ISODateTimeFormat
+import play.api.Logger
 
-case class StickyNote(id: Pk[Long], text: String)
+case class StickyNote(id: Pk[Long], text: String, createdAt: DateTime)
 
 object StickyNote {
 
-  implicit object PkFormat extends Format[Pk[Long]] {
-    def reads(json: JsValue): JsResult[Pk[Long]] = JsSuccess(
-      json.asOpt[Long].map(id => Id(id)).getOrElse(NotAssigned)
-    )
+  val dateTimeFormatter = ISODateTimeFormat.dateTime()
 
-    def writes(id: Pk[Long]): JsValue = id.map(JsNumber(_)).getOrElse(JsNull)
-  }
 
   implicit object StickyNoteFormat extends Format[StickyNote] {
 
@@ -35,23 +34,25 @@ object StickyNote {
 
     def reads(json: JsValue): JsResult[StickyNote] = JsSuccess(StickyNote(
       (json \ "id").as[Pk[Long]],
-      (json \ "text").as[String]
+      (json \ "text").as[String],
+      (json \ "createdAt").as[DateTime]
     ))
 
     def writes(stickyNote: StickyNote): JsValue = JsObject(Seq(
       "id" -> extractId(stickyNote),
-      "text" -> JsString(stickyNote.text)
-    ))
-
+      "text" -> JsString(stickyNote.text),
+      "createdAt" -> JsString(dateTimeFormatter.print(stickyNote.createdAt.toDateTime(DateTimeZone.UTC))))
+    )
 
   }
 
 
   private val stickyNoteRowParser = {
     get[Pk[Long]]("id") ~
-      get[String]("text") map {
-      case (id@Id(idValue)) ~ name => {
-        StickyNote(id, name)
+      get[String]("text") ~
+      get[DateTime]("created_at") map {
+      case (id@Id(idValue)) ~ name ~ createdAt => {
+        StickyNote(id, name, createdAt)
       }
     }
   }
@@ -61,6 +62,39 @@ object StickyNote {
     DB.withConnection {
       implicit connection =>
         SQL("SELECT * from sticky_notes").as(stickyNoteRowParser *)
+    }
+  }
+
+  def create(): Option[Long] = {
+    DB.withConnection {
+      implicit connection =>
+        SQL("INSERT INTO sticky_notes (text,created_at) VALUES ({text},NOW())").on('text -> "sticky note ;)").executeInsert()
+    }
+  }
+
+  def save(stickyNote: StickyNote): Int = {
+    DB.withConnection {
+      implicit connection =>
+        val q = SQL( """
+              UPDATE sticky_notes SET
+              text = {text},
+              created_at = {created_at}
+              WHERE id = {id}
+             """).on('text -> stickyNote.text,'created_at -> stickyNote.createdAt, 'id -> stickyNote.id)
+
+      Logger.logger.debug(q.sql.toString);
+
+          q.executeUpdate()
+    }
+  }
+
+  def deleteById(id: Long): Int = {
+    DB.withConnection {
+      implicit connection =>
+        SQL( """
+              DELETE FROM sticky_notes
+              WHERE id = {id}
+             """).on('id -> id).executeUpdate()
     }
   }
 

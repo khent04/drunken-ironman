@@ -5,5 +5,9 @@
 # Home page
 GET     /                           controllers.Application.index
 
+#StickyNotes REST API
+GET     /api/sticky-notes           controllers.api.rest.StickyNotes.findAll
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

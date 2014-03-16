@@ -1,0 +1,15 @@
+<div class="stickies">
+    <div ng-repeat="stickyNote in stickies track by $index"
+         ng-mousedown="mouseDown(stickyNote)"
+         sticky-note="stickyNote">
+        <div class="tool-bar">
+        <span class="delete-button" ng-click="stickyNote.delete()">
+            <i prevent-drag class="glyphicon glyphicon-remove"></i>
+        </span>
+            <span class="title">{{ stickyNote.createdAt | date:'yyyy-MM-dd'}}</span>
+        <span class="edit-button" ng-click="onEditStickyNoteMeta({stickyNote:stickyNote})">
+            <i prevent-drag class="glyphicon glyphicon-wrench"></i>
+        </span>
+        </div>
+    </div>
+</div>

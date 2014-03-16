@@ -1,0 +1,14 @@
+{
+    "name": "stickies",
+    "version": "0.0.1",
+    "main": "",
+    "ignore": [
+    ],
+    "dependencies": {
+        "angular": "*",
+        "angular-cookies": "*",
+        "bootstrap": "*"
+    },
+    "devDependencies": {
+    }
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stickies</title>
+    <!-- fix IE compatibility mode issues with AngularJS -->
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <link rel="stylesheet" href="components/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/styles.css"/>
+    <link rel="stylesheet" href="css/stickies.css"/>
+</head>
+<!--[if IE]>
+<body onselectstart="return false;"><![endif]-->
+<!--[if !IE]> -->
+<body> <!-- <![endif]-->
+<div id="ng-app" ng-app="app" ng-controller="MainController">
+
+    <div class="navbar navbar-default">
+        <span class="navbar-brand" href="#">Stickies</span>
+
+        <div class="nav navbar-nav">
+            <span class="btn btn-default navbar-btn" ng-click="addStickyNote()">add sticky note</span>
+            <span class="btn btn-default navbar-btn"
+                  ng-click="toggleLiveUpdateConnection()">
+                    <i class="glyphicon glyphicon-flash"></i>
+                    websoket : {{stickies.liveUpdateConnected ? "on" : "off"}}
+            </span>
+            <span class="btn btn-default navbar-btn"
+                  ng-click="toggleHttpRequestsJamming()">
+                    http requests jamming : {{httpRequestJammingIsActive ? "on" : "off"}}
+            </span>
+        </div>
+    </div>
+
+    <div stickies="stickies.stickyNotes"
+         on-edit-sticky-note-meta="editStickyNoteMeta(stickyNote)">
+    </div>
+
+    <div modal="modal">
+    </div>
+
+    <script type="text/ng-template" id="editStickyNoteModal">
+        <div class="modal-header">
+            <button type="button" class="close" aria-hidden="true" ng-click="close()">×</button>
+            <h4 class="modal-title">Edit sticky note</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>color</label>
+                <select class="form-control"
+                        ng-change="stickyNote.save()"
+                        ng-model="stickyNote.themeId"
+                        ng-options="theme.id as theme.name for theme in themes"></select>
+            </div>
+            <div class="form-inline">
+                <div class="form-group">
+                    <label>date</label><br>
+                    <small>{{stickyNote.createdAt | date:'yyyy-MM-dd'}}</small>
+                    <div date-input="stickyNote.createdAt" on-change="stickyNote.save()"></div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="confirmDeletionModal">
+        <div class="modal-header">
+            <button type="button" class="close" aria-hidden="true" ng-click="close()">×</button>
+            <h4 class="modal-title">Confirm sticky note deletion</h4>
+        </div>
+        <div class="modal-body">
+            <label>Do you really want to delete this amazing note ?</label>
+            <br>
+            <button class="btn btn-danger" ng-click="confirm();close()">YES</button>
+            <button class="btn btn-default" ng-click="close()">NO</button>
+        </div>
+    </script>
+
+</div>
+<script type="text/javascript" src="components/angular/angular.min.js"></script>
+<script type="text/javascript" src="components/angular-cookies/angular-cookies.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+</body>
+</html>

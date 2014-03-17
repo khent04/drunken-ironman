@@ -3,7 +3,7 @@
 # ~~~~
 
 # Home page
-GET     /                                       controllers.Application.index
+GET    /                                        controllers.Assets.at(path="/public/",file="/index.html")
 
 #StickyNotes REST API
 GET     /api/sticky-notes                       controllers.api.rest.StickyNotes.findAll
@@ -12,5 +12,9 @@ POST    /api/sticky-notes                       controllers.api.rest.StickyNotes
 DELETE  /api/sticky-notes/:id                   controllers.api.rest.StickyNotes.deleteById(id:Long)
 GET     /api/sticky-notes/live-update           controllers.api.rest.StickyNotes.liveUpdate
 
+#StickyNoteThemes REST API
+GET     /api/sticky-note-themes                 controllers.api.rest.StickyNoteThemes.findAll
+
+
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /*file                                  controllers.Assets.at(path="/public", file)

@@ -27,7 +27,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import scala.util.{Failure, Try}
 import play.api.Logger
 
-case class StickyNote(id: Pk[Long], text: String, px: Int, py: Int, createdAt: DateTime, updatedAt: DateTime)
+case class StickyNote(id: Pk[Long], text: String, themeId: String, px: Int, py: Int, createdAt: DateTime, updatedAt: DateTime)
 
 object StickyNote {
 
@@ -44,6 +44,7 @@ object StickyNote {
     def reads(json: JsValue): JsResult[StickyNote] = JsSuccess(StickyNote(
       (json \ "id").as[Pk[Long]],
       (json \ "text").as[String],
+      (json \ "themeId").as[String],
       (json \ "px").as[Int],
       (json \ "py").as[Int],
       (json \ "createdAt").as[DateTime],
@@ -53,6 +54,7 @@ object StickyNote {
     def writes(stickyNote: StickyNote): JsValue = JsObject(Seq(
       "id" -> extractId(stickyNote),
       "text" -> JsString(stickyNote.text),
+      "themeId" -> JsString(stickyNote.themeId),
       "px" -> JsNumber(stickyNote.px),
       "py" -> JsNumber(stickyNote.py),
       "createdAt" -> JsNumber(stickyNote.createdAt.getMillis),
@@ -65,12 +67,13 @@ object StickyNote {
   private val stickyNoteRowParser = {
     get[Pk[Long]]("id") ~
       get[String]("text") ~
+      get[String]("theme_id") ~
       get[Int]("px") ~
       get[Int]("py") ~
       get[DateTime]("created_at") ~
       get[DateTime]("updated_at") map {
-      case (id@Id(idValue)) ~ name ~ px ~ py ~ createdAt ~ updatedAt => {
-        StickyNote(id, name, px, py, createdAt, updatedAt)
+      case (id@Id(idValue)) ~ text ~ themeId ~ px ~ py ~ createdAt ~ updatedAt => {
+        StickyNote(id, text, themeId, px, py, createdAt, updatedAt)
       }
     }
   }
@@ -109,15 +112,18 @@ object StickyNote {
         Try {
           val now = new DateTime();
 
-          val res = SQL( """
+          SQL( """
               UPDATE sticky_notes SET
               text = {text},
+              theme_id = {themeId},
               px = {px},
               py = {py},
               created_at = {createdAt},
               updated_at = {updatedAt}
               WHERE id = {id}
-                         """).on('text -> stickyNote.text,
+                         """).on(
+            'text -> stickyNote.text,
+            'themeId -> stickyNote.themeId,
             'px -> stickyNote.px,
             'py -> stickyNote.py,
             'createdAt -> stickyNote.createdAt, 'id -> stickyNote.id,

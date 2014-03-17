@@ -1,0 +1,107 @@
+@import "../mixins/transition";
+@import "../mixins/box-shadow";
+@import "../mixins/prevent-selection";
+@import "../mixins/clear-both";
+
+@post-it: #FFFFA5;
+@blue: #06A6FF;
+@black: #000;
+@green: #8CA77D;
+@red: #E22211;
+
+.sticky-note {
+  .prevent-selection();
+  .box-shadow(0,0,10px,0.1px,rgba(0,0,0,0.25));
+
+  padding: 5px 5px 0 5px;
+  position: absolute;
+
+  background: @post-it;
+
+  &.post-it {
+    background: @post-it;
+  }
+
+  &.green {
+    background: @green;
+    color: #415035;
+  }
+
+  &.blue {
+    background: @blue;
+    color: #fff;
+  }
+
+  &.red {
+    background: @red;
+    color: #FFF500;
+  }
+
+  &.black {
+    background: @black;
+    color: #fff;
+  }
+
+  .tool-bar {
+    .transition(opacity,200ms,ease-in-out);
+    margin-bottom: 2px;
+    opacity: 0.4;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    margin-bottom: 5px;
+    cursor: -webkit-grab;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &:after {
+      .clear-both();
+    }
+
+    .delete-button,
+    .edit-button {
+      cursor: pointer;
+    }
+
+    .title {
+      position: absolute;
+      left: 30px;
+      right: 30px;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .delete-button {
+      float: right;
+    }
+
+    .edit-button {
+      float: left;
+    }
+
+  }
+
+  &.focused {
+    z-index: 1;
+  }
+
+  &.dragged {
+    .tool-bar {
+      cursor: -webkit-grabbing;
+    }
+  }
+
+  textarea {
+    border: none;
+    padding: 0;
+    background-color: transparent;
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    min-width: 200px;
+    min-height: 200px;
+    &:focus {
+      outline: none;
+    }
+
+  }
+
+}

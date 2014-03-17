@@ -9,6 +9,8 @@ import play.api.libs.json.JsSuccess
 import anorm.TypeDoesNotMatch
 import play.api.libs.json.JsNumber
 import anorm.MetaDataItem
+import play.api.Logger
+import scala.util.Try
 
 object AnormExtensions {
 
@@ -41,9 +43,12 @@ object AnormExtensions {
   }
 
   implicit object DateTimeFormatter extends Format[DateTime] {
-    def reads(json: JsValue): JsResult[DateTime] = JsSuccess(
-      json.asOpt[String].map(time => DateTime.parse(time)).getOrElse(new DateTime())
-    )
+    def reads(json: JsValue): JsResult[DateTime] = try {
+      JsSuccess(new DateTime(json.asOpt[Long].get))
+    } catch {
+      case e => JsError()
+    }
+
 
     def writes(date: DateTime): JsValue = JsString(date.toString())
   }

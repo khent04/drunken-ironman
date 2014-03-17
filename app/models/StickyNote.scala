@@ -27,7 +27,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import scala.util.{Failure, Try}
 import play.api.Logger
 
-case class StickyNote(id: Pk[Long], text: String, px: Int, py: Int, created_at: DateTime, updatedAt: DateTime)
+case class StickyNote(id: Pk[Long], text: String, px: Int, py: Int, createdAt: DateTime, updatedAt: DateTime)
 
 object StickyNote {
 
@@ -46,7 +46,7 @@ object StickyNote {
       (json \ "text").as[String],
       (json \ "px").as[Int],
       (json \ "py").as[Int],
-      (json \ "date").as[DateTime],
+      (json \ "createdAt").as[DateTime],
       (json \ "updatedAt").as[DateTime]
     ))
 
@@ -55,7 +55,7 @@ object StickyNote {
       "text" -> JsString(stickyNote.text),
       "px" -> JsNumber(stickyNote.px),
       "py" -> JsNumber(stickyNote.py),
-      "createdAt" -> JsNumber(stickyNote.created_at.getMillis),
+      "createdAt" -> JsNumber(stickyNote.createdAt.getMillis),
       "updatedAt" -> JsNumber(stickyNote.updatedAt.getMillis))
     )
 
@@ -108,27 +108,30 @@ object StickyNote {
       implicit connection =>
         Try {
           val now = new DateTime();
-          SQL( """
+
+          val res = SQL( """
               UPDATE sticky_notes SET
               text = {text},
               px = {px},
               py = {py},
-              created_at = {sticky_note_date},
+              created_at = {createdAt},
               updated_at = {updatedAt}
               WHERE id = {id}
-               """).on('text -> stickyNote.text,
+                         """).on('text -> stickyNote.text,
             'px -> stickyNote.px,
             'py -> stickyNote.py,
-            'sticky_note_date -> stickyNote.created_at, 'id -> stickyNote.id,
+            'createdAt -> stickyNote.createdAt, 'id -> stickyNote.id,
             'updatedAt -> now, 'id -> stickyNote.id).executeUpdate()
+
+          val updatedStickyNote = stickyNote.copy(updatedAt = now)
 
           liveUpdate ! Update(Json.obj(
             "requestUUID" -> JsString(requestUUID.getOrElse(null)),
             "type" -> "update",
-            "stickyNote" -> Json.toJson(stickyNote)
+            "stickyNote" -> Json.toJson(updatedStickyNote)
           ))
 
-          stickyNote.copy(updatedAt = now)
+          updatedStickyNote
 
         }
     }

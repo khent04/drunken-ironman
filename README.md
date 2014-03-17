@@ -14,6 +14,7 @@
 - `bower install`
 - `grunt play-publish`
 - `cd ..`
+- edit `application.conf` in order to setup the database
 - `play`
 - `run`
 

@@ -75,7 +75,7 @@ angular.module("stickies").service("Stickies", function Stickies(StickiesWebServ
             liveUpdateConnected: false
         };
         var requestsUUID = UUID();
-        stickiesWebService = new StickiesWebService(requestsUUID, "http://localhost:9000");
+        stickiesWebService = new StickiesWebService(requestsUUID);
         stickiesLiveUpdate = new StickiesLiveUpdate(requestsUUID);
 
         stickiesLiveUpdate.addUpdateStickyNoteListener(createListeners(updateStickyNote));

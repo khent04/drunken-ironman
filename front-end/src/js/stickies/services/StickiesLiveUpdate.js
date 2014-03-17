@@ -1,5 +1,4 @@
-angular.module("stickies").factory("StickiesLiveUpdate", function (WebSocket, EventDispatcher) {
-
+angular.module("stickies").factory("StickiesLiveUpdate", function (WebSocket, EventDispatcher, $location) {
 
     var UPDATE_STICKY_NOTE = "update_sticky_note";
     var DELETE_STICKY_NOTE = "delete_sticky_note";
@@ -18,7 +17,7 @@ angular.module("stickies").factory("StickiesLiveUpdate", function (WebSocket, Ev
         var retainedMessages;
 
         function connect() {
-            websocket = new WebSocket("ws:://localhost:9000/api/sticky-notes/live-update");
+            websocket = new WebSocket("ws:://" + $location.host() + ":" + $location.port() + "/api/sticky-notes/live-update");
             websocket.onopen = websocketOnOpen;
             websocket.onerror = websocketOnError;
             websocket.onmessage = websocketOnMessage;

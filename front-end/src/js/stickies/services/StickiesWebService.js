@@ -6,31 +6,31 @@ angular.module("stickies").factory("StickiesWebService", function ($http) {
         });
     }
 
-    function StickiesWebService(requestsUUID, basePath) {
+    function StickiesWebService(requestsUUID) {
 
         this.updateStickyNote = function (stickyNote) {
             return extractData($http({
                 method: "POST",
                 headers: {requestUUID: requestsUUID},
-                url: basePath + "/api/sticky-notes",
+                url: "/api/sticky-notes",
                 data: stickyNote
             }));
         };
 
         this.deleteStickyNote = function (stickyNote) {
-            return extractData($http.delete(basePath + "/api/sticky-notes/" + stickyNote.id));
+            return extractData($http.delete("/api/sticky-notes/" + stickyNote.id));
         };
 
         this.createStickyNote = function () {
-            return extractData($http.put(basePath + "/api/sticky-notes"));
+            return extractData($http.put("/api/sticky-notes"));
         };
 
         this.loadStickyNotes = function () {
-            return extractData($http.get(basePath + "/api/sticky-notes"));
+            return extractData($http.get("/api/sticky-notes"));
         };
 
         this.loadStickyNoteThemes = function () {
-            return extractData($http.get(basePath + "/api/sticky-note-themes"));
+            return extractData($http.get("/api/sticky-note-themes"));
         };
 
     }

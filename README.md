@@ -9,12 +9,12 @@
 
 ##Installation
 - clone project `git clone https://github.com/oxmo456/drunken-ironman.git part2`
+- edit `part2/conf/application.conf` in order to setup the database
 - `cd part2/front-end`
 - `npm install`
 - `bower install`
 - `grunt play-publish`
 - `cd ..`
-- edit `application.conf` in order to setup the database
 - `play`
 - `run`
 
